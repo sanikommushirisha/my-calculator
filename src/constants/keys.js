@@ -2,9 +2,9 @@ export const numericKeys = [7, 8, 9, 4, 5, 6, 1, 2, 3];
 
 
 export const functionKeys = [
-   { label: "AC", value: "AC" },
-   { label: "±", value: "+/-" },
-   { label: "%", value: "%" }
+   { label: "AC", value: "AC" , type: "fx" },
+   { label: "±", value: "+/-" , type: "fx" },
+   { label: "%", value: "%" , type: "fx" }
 ];
 
 export const operatorKeys = [

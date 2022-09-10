@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button } from '../../components/button';
+import { Button } from '../components/button';
 import Grid from '@mui/material/Grid';
-import { functionKeys, numericKeys, lastRowKeys, operatorKeys } from './keys';
+import { functionKeys, numericKeys, lastRowKeys, operatorKeys } from '../constants/keys';
 
 export const Keypad = (props) => {
   const { onKeyClick } = props;

@@ -1,124 +1,114 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { Button} from './components/button/Button.tsx';
-import { Keypad } from './containers/keypad/KeyPad.tsx';
-import { Display } from './containers/display/Display.tsx';
-import Box from '@mui/material/Box';
-import { evaluate } from 'mathjs';
+import { Typography, Box } from '@mui/material';
+
+import { Keypad } from './containers/KeyPad.tsx';
+import { Display } from './containers/Display.tsx';
+import NumberUtils from './utils/NumberUtils';
 
 function App() {
   const [displayValue, setDisplayValue] = React.useState("");
   const [accValue, setAccValue] = React.useState("");
-  const [lastValueType, setLastValueType] = React.useState();
-  console.log({ accValue, displayValue, lastValueType});
-  console.log(evaluate('3.3*6'));
+  const [isLastCharOperator, setIsLastCharOperator] = React.useState(false);
 
-  function isFloat(n){
-    return Number(n) === n && n % 1 !== 0;
-}
-
-  const handleClickFunctionKey = (newValue) => {
-    switch(newValue) {
-      case "%": {
-        if(lastValueType === "numeric") {
-          const finalVal = evaluate(accValue)/100
-          setAccValue(finalVal);
-          setDisplayValue(finalVal);
-        }
-        else if(lastValueType === "operator") {
-          const finalVal =  evaluate(accValue.slice(0, -1)/100);
-          setAccValue(finalVal);
-          setDisplayValue(finalVal);
-        }
-        setLastValueType("numeric");
-        break;
-      }
-      case "+/-":{
-        if(lastValueType === "numeric") {
-          const finalVal = -evaluate(accValue)
-          setAccValue(finalVal);
-          setDisplayValue(finalVal);
-        }
-        else if(lastValueType === "operator") {
-          const finalVal =  -evaluate(accValue.slice(0, -1));
-          setAccValue(finalVal);
-          setDisplayValue(finalVal);
-        }
-        setLastValueType("numeric");
-        break;
-      }
-      case "AC": {
-        setDisplayValue("");
-        setAccValue("");
-        setLastValueType("");
-        break;
-      }
-      case ".": {
-        
-        if(String(displayValue).indexOf(".") === -1) {
-          if(lastValueType === "numeric") {
-            setDisplayValue(displayVal => displayVal + ".")
-            setAccValue(accValue => accValue + ".")
-          }
-          else {
-            setDisplayValue("0.");
-            setAccValue(accValue => accValue+ "0.")
-          }
-        }
-        else {
-          //handleerror
-        }
-        setLastValueType("numeric");
-        break;
-      }
-    }
+  const cleanAccValue = () => {
+    return isLastCharOperator ? accValue.slice(0, -1): accValue;
   }
-  const handleClickNumericKey = (newValue) => {
-    setAccValue(accVal => accVal + newValue);
-    setLastValueType("numeric");
-    if(lastValueType === "numeric") {
-      setDisplayValue(dv => dv + String(newValue));
+
+  const reset = () => {
+    setDisplayValue("");
+    setAccValue("");
+    setIsLastCharOperator(false);
+  }
+
+  const handlePercentageClick = () => {
+    const updatedDisplayValue = NumberUtils.trimDecimals(displayValue/100);
+    const cleanedAccValue =  cleanAccValue();
+    const updatedAccVal = NumberUtils.removeLastNChar(cleanedAccValue, String(displayValue).length) + updatedDisplayValue;
+    setAccValue(updatedAccVal);
+    setDisplayValue(updatedDisplayValue);
+  }
+
+  const handleSignChange = () => {
+    const updatedDisplayValue = -displayValue;
+    const cleanedAccValue =  cleanAccValue();
+    const updatedAccVal = NumberUtils.removeLastNChar(cleanedAccValue, String(displayValue).length) + updatedDisplayValue;
+    setDisplayValue(updatedDisplayValue); 
+    setAccValue(updatedAccVal);
+  }
+
+  const handleDecimalFunction = () => {
+    if(!isLastCharOperator && String(displayValue).indexOf(".") !== -1) {
+      return
+    };
+    const updatedChar = isLastCharOperator ? "0." : ".";
+    const updatedDisplayValue = isLastCharOperator ? "0." : (displayValue + ".");
+    setDisplayValue(updatedDisplayValue);
+    setAccValue(accValue => accValue + updatedChar);
+  }
+
+  const onFunctionKeyClick = (newValue) => {
+    switch(newValue) {
+      case "%": handlePercentageClick(); break;
+      case "+/-": handleSignChange(); break;
+      case "AC": reset(); break;
+      case ".": handleDecimalFunction(); break;
     }
-    else {
+    setIsLastCharOperator(false);
+  }
+
+  const onNumericKeyClick = (newValue) => {
+    setAccValue(accVal => accVal + String(newValue));
+    setIsLastCharOperator(false);
+    if(isLastCharOperator) {
       setDisplayValue(String(newValue))
     }
+    else {
+      setDisplayValue(displayVal => displayVal + String(newValue));
+    }
   }
 
-  const handleClickOperator = (newValue) => {
+  const onEvaluate = () => {
+    const evaluatedVal = NumberUtils.evaluateExpression(cleanAccValue());
+    const trimmedVal = NumberUtils.trimDecimals(evaluatedVal, 4);
+    setDisplayValue(String(trimmedVal));
+    setAccValue(String(trimmedVal));
+    setIsLastCharOperator(false);
+  }
+
+  const onOperatorClick = (newValue) => {
     if(newValue === "="){
-      const updatedAccVal = lastValueType === "operator" ? accValue.slice(0, -1): accValue;
-      //log removing operator
-      const evaluatedVal = evaluate(updatedAccVal);
-      setDisplayValue(evaluatedVal)
-      setLastValueType("numeric");
-      setAccValue(evaluatedVal)
+      onEvaluate();
       return;
     }
-    if(lastValueType === "numeric") {
-      setAccValue(accValue => accValue+String(newValue))
-      setLastValueType("operator")
-    }
-    else if(lastValueType === "operator") {
-      setAccValue(accValue => accValue.slice(0, -1) + String(newValue));
-      setLastValueType("operator")
-    }
+    const updatedAccVal = cleanAccValue() + newValue;
+    setAccValue(updatedAccVal);
+    setIsLastCharOperator(true);
   }
 
   const onKeyClick = (newValue, keyType) => {
     switch (keyType) {
-       case "fx": handleClickFunctionKey(newValue); break;
-       case "numeric": handleClickNumericKey(newValue); break;
-       case "operator": handleClickOperator(newValue); break;
+       case "fx": onFunctionKeyClick(newValue); break;
+       case "numeric": onNumericKeyClick(newValue); break;
+       case "operator": onOperatorClick(newValue); break;
     }
  }
+ 
+ const onDisplayInputChange = (updatedDisplayValue) => {
+  const updatedAccVal = NumberUtils.removeLastNChar(accValue, displayValue.length) + updatedDisplayValue;
+  setDisplayValue(updatedDisplayValue);
+  setAccValue(updatedAccVal);
+ }
+
   return (
-    <Box>
-      <Box p={1} m={10} backgroundColor="black" width="fit-content">
-        <Display value={displayValue} setValue={() => {}}/>
-        <Keypad onKeyClick={onKeyClick} />
+      <Box>
+        <Box p={1} m={10} backgroundColor="black" width="fit-content">
+          <Display value={displayValue} onInputChange={onDisplayInputChange}/>
+          <Keypad onKeyClick={onKeyClick} />
+        </Box>
+        <Box m={10} p={2} border="1px solid black">
+          <Typography> Current Expression: {accValue} </Typography>
+        </Box>
       </Box>
-    </Box>
   );
 }
 
