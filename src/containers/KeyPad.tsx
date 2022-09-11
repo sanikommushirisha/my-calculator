@@ -3,7 +3,11 @@ import { Button } from '../components/button';
 import Grid from '@mui/material/Grid';
 import { functionKeys, numericKeys, lastRowKeys, operatorKeys } from '../constants/keys';
 
-export const Keypad = (props) => {
+interface KeyPadProps {
+  onKeyClick: (value: string| number, type: string) => void
+}
+
+export const Keypad = (props: KeyPadProps) => {
   const { onKeyClick } = props;
   return (
     <Grid display="flex" flexDirection="row" gap="4px">

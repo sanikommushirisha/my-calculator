@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import Calculator from './Calculator.tsx';
 import reportWebVitals from './reportWebVitals';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -10,7 +10,7 @@ root.render(
   // To Handle Errors from MathJs Evaluate
   <ErrorBoundary>
     <React.StrictMode>
-      <App />
+      <Calculator />
     </React.StrictMode>
   </ErrorBoundary>
 );

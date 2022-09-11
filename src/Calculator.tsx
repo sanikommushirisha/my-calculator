@@ -5,7 +5,7 @@ import { Keypad } from './containers/KeyPad.tsx';
 import { Display } from './containers/Display.tsx';
 import NumberUtils from './utils/NumberUtils';
 
-function App() {
+const Calculator = () => {
   const [displayValue, setDisplayValue] = React.useState("");
   const [accValue, setAccValue] = React.useState("");
   const [isLastCharOperator, setIsLastCharOperator] = React.useState(false);
@@ -21,7 +21,7 @@ function App() {
   }
 
   const handlePercentageClick = () => {
-    const updatedDisplayValue = NumberUtils.trimDecimals(displayValue/100);
+    const updatedDisplayValue = NumberUtils.trimDecimals(Number(displayValue)/100);
     const cleanedAccValue =  cleanAccValue();
     const updatedAccVal = NumberUtils.removeLastNChar(cleanedAccValue, String(displayValue).length) + updatedDisplayValue;
     setAccValue(updatedAccVal);
@@ -32,7 +32,7 @@ function App() {
     const updatedDisplayValue = -displayValue;
     const cleanedAccValue =  cleanAccValue();
     const updatedAccVal = NumberUtils.removeLastNChar(cleanedAccValue, String(displayValue).length) + updatedDisplayValue;
-    setDisplayValue(updatedDisplayValue); 
+    setDisplayValue(String(updatedDisplayValue)); 
     setAccValue(updatedAccVal);
   }
 
@@ -93,15 +93,15 @@ function App() {
     }
  }
  
- const onDisplayInputChange = (updatedDisplayValue) => {
+ const onDisplayInputChange = (updatedDisplayValue: Number) => {
   const updatedAccVal = NumberUtils.removeLastNChar(accValue, displayValue.length) + updatedDisplayValue;
-  setDisplayValue(updatedDisplayValue);
+  setDisplayValue(String(updatedDisplayValue));
   setAccValue(updatedAccVal);
  }
 
   return (
       <Box>
-        <Box p={1} m={10} backgroundColor="black" width="fit-content">
+        <Box p={1} m={10} sx={{ backgroundColor: "black", width: "fit-content"}}>
           <Display value={displayValue} onInputChange={onDisplayInputChange}/>
           <Keypad onKeyClick={onKeyClick} />
         </Box>
@@ -112,4 +112,4 @@ function App() {
   );
 }
 
-export default App;
+export default Calculator;
